@@ -43,13 +43,8 @@ jobs:
             go-mod-
 
       - name: Install Dependencies
-        run: |
-          # Check if install-dependencies-command is provided, otherwise echo no dependencies to install
-          if [ -n "${{ inputs.install-dependencies-command }}" ]; then
-            ${{ inputs.install-dependencies-command }}
-          else
-            echo "No dependencies to install"
-          fi
+        if: ${{ inputs.install-dependencies-command != '' }}
+        run: ${{ inputs.install-dependencies-command }}
 
       - name: Build Application
         run: make build

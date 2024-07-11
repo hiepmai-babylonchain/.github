@@ -11,9 +11,6 @@ on:
         description: 'Command to install dependencies'
         required: false
         type: string
-      test-commands:
-        description: 'List of test commands'
-        type: string
       run-unit-tests:
         description: 'Run unit tests'
         type: boolean
@@ -61,10 +58,6 @@ jobs:
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.55.2
           ./bin/golangci-lint run --timeout 5m0s
-
-      - name: Run tests
-        run: |
-          ${{ inputs.test-commands }}
 
       - name: Run Unit Tests
         if: ${{ inputs.run-unit-tests == true }}

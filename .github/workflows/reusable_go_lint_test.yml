@@ -1,0 +1,66 @@
+name: Reusable Go Build, Lint, and Test Workflow
+
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        description: 'Go version'
+        required: true
+        type: string
+        default: '1.22.3'
+      install-dependencies-command:
+        description: 'Command to install dependencies'
+        required: false
+        type: string
+      test-commands:
+        description: 'List of test commands'
+        required: true
+        type: string
+
+jobs:
+  build_lint_test:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+
+      - name: Print Go environment
+        run: go env
+
+      - name: Cache Go modules
+        id: go-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.go/pkg/mod
+            ~/.cache/go-build
+          key: go-mod-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            go-mod-
+
+      - name: Install Dependencies
+        run: |
+          # Check if install-dependencies-command is provided, otherwise echo no dependencies to install
+          if [ -n "${{ inputs.install-dependencies-command }}" ]; then
+            ${{ inputs.install-dependencies-command }}
+          else
+            echo "No dependencies to install"
+          fi
+
+      - name: Build Application
+        run: make build
+
+      - name: Lint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.55.2
+          ./bin/golangci-lint run --timeout 5m0s
+
+      - name: Run tests
+        run: |
+          ${{ inputs.test-commands }}

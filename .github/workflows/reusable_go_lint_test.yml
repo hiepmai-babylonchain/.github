@@ -5,7 +5,6 @@ on:
     inputs:
       go-version:
         description: 'Go version'
-        required: true
         type: string
         default: '1.22.3'
       install-dependencies-command:

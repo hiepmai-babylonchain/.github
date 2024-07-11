@@ -14,6 +14,14 @@ on:
       test-commands:
         description: 'List of test commands'
         type: string
+      run-unit-tests:
+        description: 'Run unit tests'
+        type: boolean
+        default: false
+      run-integration-tests:
+        description: 'Run integration tests'
+        type: boolean
+        default: false
 
 jobs:
   build_lint_test:
@@ -57,3 +65,13 @@ jobs:
       - name: Run tests
         run: |
           ${{ inputs.test-commands }}
+
+      - name: Run Unit Tests
+        if: ${{ inputs.run-unit-tests == true }}
+        run: |
+          make test
+
+      - name: Run Integration Tests
+        if: ${{ inputs.run-integration-tests == true }}
+        run: |
+          make test-e2e

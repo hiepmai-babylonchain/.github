@@ -111,5 +111,4 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          sudo ln -s /usr/local/go/bin/go /usr/bin/go
           sudo make test-e2e

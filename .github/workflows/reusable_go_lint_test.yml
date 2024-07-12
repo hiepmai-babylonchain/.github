@@ -29,9 +29,8 @@ on:
         default: false
 
 jobs:
-  build_lint_test:
+  build:
     runs-on: ubuntu-22.04
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -58,22 +57,87 @@ jobs:
       - name: Install Dependencies
         if: ${{ inputs.install-dependencies-command != '' }}
         run: ${{ inputs.install-dependencies-command }}
- 
-      - name: Go Lint
-        uses: golangci/golangci-lint-action@v6
-        if: ${{ inputs.run-lint }}
-        with:
-          version: ${{ inputs.go-lint-version }}
 
       - name: Build Application
         run: make build
 
+  lint:
+    runs-on: ubuntu-22.04
+    if: ${{ inputs.run-lint }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.go/pkg/mod
+            ~/.cache/go-build
+          key: go-mod-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            go-mod-
+
+      - name: Install Lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: ${{ inputs.go-lint-version }}
+
+      - name: Run Lint
+        run: golangci-lint run
+
+  unit-tests:
+    runs-on: ubuntu-22.04
+    if: ${{ inputs.run-unit-tests }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.go/pkg/mod
+            ~/.cache/go-build
+          key: go-mod-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            go-mod-
+
       - name: Run Unit Tests
-        if: ${{ inputs.run-unit-tests }}
-        run: |
-          make test
+        run: make test
+
+  integration-tests:
+    runs-on: ubuntu-22.04
+    if: ${{ inputs.run-integration-tests }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.go/pkg/mod
+            ~/.cache/go-build
+          key: go-mod-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            go-mod-
 
       - name: Run Integration Tests
-        if: ${{ inputs.run-integration-tests }}
-        run: |
-          make test-e2e
+        run: make test-e2e

@@ -43,6 +43,9 @@ jobs:
         with:
           tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           outputs: type=docker,dest=/tmp/${{ env.IMAGE_NAME }}.tar
+          context: ${{ inputs.dockerContext }}
+          file: ${{ inputs.dockerfile }}
+          
  
       - name: Upload Docker image to workspace
         if: inputs.publish == true

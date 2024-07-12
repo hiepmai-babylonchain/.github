@@ -78,7 +78,7 @@ jobs:
     - name: Push Docker image with SHA
       run: |
         docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ secrets.DOCKERHUB_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-        docker push ${{ secrets.DOCKERHUB_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+        docker push ${{ secrets.DOCKERHUB_REGISTRY_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
  
     - name: Push Docker image with Tag
       if: startsWith(github.ref, 'refs/tags/')

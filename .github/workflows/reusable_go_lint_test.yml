@@ -110,4 +110,6 @@ jobs:
           go-version: ${{ inputs.go-version }}
 
       - name: Run Integration Tests
-        run: make test-e2e
+        run: |
+          sudo ln -s /usr/local/go/bin/go /usr/bin/go
+          sudo make test-e2e

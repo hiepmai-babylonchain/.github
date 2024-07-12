@@ -7,10 +7,18 @@ on:
         description: 'Go version'
         type: string
         default: '1.22.3'
+      go-lint-version:
+        description: 'Go Lint version'
+        type: string
+        default: 'v1.59'
       install-dependencies-command:
         description: 'Command to install dependencies'
         required: false
         type: string
+      run-lint:
+        description: 'Run lint'
+        type: boolean
+        default: false
       run-unit-tests:
         description: 'Run unit tests'
         type: boolean
@@ -50,21 +58,22 @@ jobs:
       - name: Install Dependencies
         if: ${{ inputs.install-dependencies-command != '' }}
         run: ${{ inputs.install-dependencies-command }}
+ 
+      - name: Go Lint
+        uses: golangci/golangci-lint-action@v6
+        if: ${{ inputs.run-lint }}
+        with:
+          version: ${{ inputs.go-lint-version }}
 
       - name: Build Application
         run: make build
 
-      - name: Lint
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.55.2
-          ./bin/golangci-lint run --timeout 5m0s
-
       - name: Run Unit Tests
-        if: ${{ inputs.run-unit-tests == true }}
+        if: ${{ inputs.run-unit-tests }}
         run: |
           make test
 
       - name: Run Integration Tests
-        if: ${{ inputs.run-integration-tests == true }}
+        if: ${{ inputs.run-integration-tests }}
         run: |
           make test-e2e

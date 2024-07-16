@@ -27,6 +27,14 @@ on:
         description: 'Run integration tests'
         type: boolean
         default: false
+      integration-tests-require-sudo:
+        description: 'Integration tests require sudo'
+        type: boolean
+        default: false
+      run-check-mock-gen:
+          description: 'Run check-mock-gen'
+          type: boolean
+          default: false
 
 jobs:
   build:
@@ -61,6 +69,14 @@ jobs:
       - name: Build Application
         run: make build
 
+      - name: Run Integration Tests
+        run: |
+          if [ ${{ inputs.integration-tests-require-sudo }} ]; then
+            sudo make test-e2e
+          else
+            make test-e2e
+          fi
+
   lint:
     runs-on: ubuntu-22.04
     if: ${{ inputs.run-lint }}
@@ -73,13 +89,11 @@ jobs:
         with:
           go-version: ${{ inputs.go-version }}
 
-      - name: Install Lint
+      - name: Run Lint
         uses: golangci/golangci-lint-action@v6
         with:
           version: ${{ inputs.go-lint-version }}
-
-      - name: Run Lint
-        run: golangci-lint run
+          args: --timeout=10m
 
   unit-tests:
     runs-on: ubuntu-22.04
@@ -95,11 +109,12 @@ jobs:
           go-version: ${{ inputs.go-version }}
 
       - name: Run Unit Tests
-        run: make test
+        run: |
+          make test
 
-  integration-tests:
+  check-mock-gen:
     runs-on: ubuntu-22.04
-    if: ${{ inputs.run-integration-tests }}
+    if: ${{ inputs.run-check-mock-gen }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -109,6 +124,12 @@ jobs:
         with:
           go-version: ${{ inputs.go-version }}
 
-      - name: Run Integration Tests
+      - name: Run make mock-gen
+        run: make mock-gen
+
+      - name: Check for uncommitted changes
         run: |
-          sudo make test-e2e
+          if ! git diff --exit-code; then
+            echo "Uncommitted changes detected. Please run 'make mock-gen' before committing."
+            exit 1
+          fi

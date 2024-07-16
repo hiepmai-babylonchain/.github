@@ -124,12 +124,14 @@ jobs:
           limit-access-to-actor: true
 
       - name: Run Integration Tests
+        if: ${{ inputs.run-integration-tests }}
         run: |
-          if [ ${{ inputs.integration-tests-require-sudo }} ]; then
+          if [ "${{ inputs.integration-tests-require-sudo }}" == "true" ]; then
             sudo make test-e2e
           else
             make test-e2e
           fi
+
 
   check-mock-gen:
     runs-on: ubuntu-22.04
